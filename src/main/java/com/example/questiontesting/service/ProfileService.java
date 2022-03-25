@@ -6,8 +6,10 @@ import com.example.questiontesting.dto.ProfileDto;
 import com.example.questiontesting.entity.Profile;
 import com.example.questiontesting.exception.NotFoundProfileException;
 import com.example.questiontesting.exception.WrongLevelException;
+import com.example.questiontesting.hateoas.ProfileAssembler;
 import com.example.questiontesting.repository.ProfileRepository;
 import com.example.questiontesting.util.Mapper;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 
 
@@ -16,18 +18,21 @@ public class ProfileService  {
 
     private ProfileRepository profileRepository;
     private Mapper mapper;
+    private ProfileAssembler assembler;
 
-    public ProfileService(ProfileRepository profileRepository,Mapper mapper) {
+    public ProfileService(ProfileRepository profileRepository,Mapper mapper,ProfileAssembler assembler) {
         this.profileRepository = profileRepository;
         this.mapper = mapper;
+        this.assembler = assembler;
     }
 
-    public ProfileDto getById(Long id){
+    public EntityModel<ProfileDto> getById(Long id){
         Profile profile = profileRepository.findById(id).orElseThrow(() -> new NotFoundProfileException(id));
         ProfileDto profileDto = mapper.mapper(profile,ProfileDto.class);
         mapper.mapper(profileDto,Profile.class);
 
-        return profileDto;
+
+        return assembler.toModel(profileDto);
     }
     public ProfileDto deleteProfileById(Long id) {
         Profile profile = new Profile();
@@ -39,14 +44,10 @@ public class ProfileService  {
         return profileDto;
     }
 
-    public ProfileDto addNewProfile(String name) {
-        Profile profile = new Profile();
-        profile.setName(name);
+    public void addNewProfile(ProfileDto profileDto) {
+        Profile profile = mapper.mapper(profileDto,Profile.class);
         profileRepository.save(profile);
-        ProfileDto profileDto = mapper.mapper(profile, ProfileDto.class);
-        mapper.mapper(profileDto, Profile.class);
 
-        return profileDto;
     }
     public ProfileDto updateProfile (Long id,String name){
         Profile profile = new Profile();

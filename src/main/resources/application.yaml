@@ -7,6 +7,6 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
       dialect: org.hibernate.dialect.PostgreSQL94Dialect
     show-sql: true
